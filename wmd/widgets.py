@@ -9,6 +9,17 @@ from django.contrib.admin import widgets as admin_widgets
 
 from wmd import settings as wmd_settings
 
+# determine where wmd media files are located. In Django 1.3, prepend path with
+# STATIC_URL, for earlier versions use MEDIA_URL. Also allow an optional
+# WMD_MEDIA_URL setting to override these.
+
+if hasattr(settings, 'WMD_MEDIA_URL'):
+    URL_PREFIX = settings.WMD_MEDIA_URL
+elif hasattr(settings, 'STATIC_URL'):
+    URL_PREFIX = "%swmd/" % settings.STATIC_URL
+else:
+    URL_PREFIX = "%swmd/" % settings.MEDIA_URL
+
 class MarkDownInput(forms.Textarea):
 
     def render(self, name, value, attrs=None):
@@ -28,9 +39,9 @@ class MarkDownInput(forms.Textarea):
         return mark_safe(u'\n'.join(html))
 
     def _media(self):
-        return forms.Media(css= {'screen': [settings.STATIC_URL + "wmd/wmd.css"]},
-                           js=(settings.STATIC_URL + "wmd/showdown.js",
-                               settings.STATIC_URL + "wmd/wmd.js"))
+        return forms.Media(css= {'screen': [URL_PREFIX + "wmd.css"]},
+                           js=(URL_PREFIX + "showdown.js",
+                               URL_PREFIX + "wmd.js"))
 
     media = property(_media)
 
